@@ -1,6 +1,7 @@
 (ns matrix
   (:use util))
 
+
 (defn generate-nil-row [size]
   (ref (vec (repeat size nil))))
 
@@ -24,7 +25,7 @@
               (do (set-value-at matrix i j v) (set-value-at matrix j i v)))))))
   matrix))
 		
-(defn matrix [size]
+(defn create-matrix [size]
   (let [m (generate-initial-matrix size)]
     (vec (for [row m] @row))))
 		
