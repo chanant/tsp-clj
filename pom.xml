@@ -25,7 +25,16 @@
   		<artifactId>clojure-contrib</artifactId>
   		<version>1.2.0</version>
   	</dependency>
-   
+  	<dependency>
+  		<groupId>hiccup</groupId>
+  		<artifactId>hiccup</artifactId>
+  		<version>0.2.1</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>compojure</groupId>
+  		<artifactId>compojure</artifactId>
+  		<version>0.3.2</version>
+  	</dependency>
   </dependencies>
   <build>
     <plugins>

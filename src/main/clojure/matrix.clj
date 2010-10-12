@@ -1,5 +1,6 @@
 (ns matrix
-  (:use util))
+  (:use util)
+  (:use hiccup.core))
 
 
 (defn- generate-nil-row 
@@ -53,5 +54,13 @@
   [mtx]
   (dotimes [i (count mtx)]
     (println (apply str (interpose "	" (mtx i))))))
-	
+
+(defn html-matrix 
+	"Returns matrix data as html table."
+	[mtx]
+	(html 
+		[:table {:border 1}
+			(for [row mtx] 
+				[:tr 
+					(for [cell row] [:td cell])])]))
 	
