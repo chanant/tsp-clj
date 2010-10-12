@@ -3,6 +3,8 @@
   (:use util))
 
 
+(defstruct result :distance :generation :path)
+
 (defn create-single-chromosome 
   "Creates random vector of given size that represent single salesman path."
   [size]
@@ -45,10 +47,11 @@
 (defn next-generation 
   "Generates new generation using crossover."
   [population m]
-  (loop [res (lazy-seq) p population]
-    (if (> (count p) 1)
-      (recur (conj res (crossover (first p) (second p) m)) (rest p))
-      (conj res (crossover (first population) (last population) m)))))
+  (letfn [(iter [p]
+           (lazy-seq
+             (when (> (count p) 1)
+               (cons (crossover (first p) (second p) m) (iter (rest p))))))]
+    (cons (crossover (first population) (last population) m) (iter population))))
 			
 (defn next-mutated-gen 
   "Generates new generation using crossover and mutation."
@@ -65,8 +68,8 @@
         best-path-val (calculate-distance mtx best-path)]
     (if (or (= generation 1000) (= no-prosperity-for 20)) 
       (if (< current-best-path-val best-path-val) 
-        {:cost current-best-path-val, :path current-best-path, :generation generation} 
-        {:cost best-path-val, :path best-path, :generation generation})
+        (struct result current-best-path-val generation current-best-path)
+        (struct result best-path-val generation best-path))
       (recur mtx (next-mutated-gen (half-of sorted-population) mtx) (inc generation) 
         (if (< current-best-path-val best-path-val) 0 (inc no-prosperity-for)) 
         (if (< current-best-path-val best-path-val) current-best-path best-path)))))

@@ -45,7 +45,7 @@
         [:h2 "Solution for TSP problem with " (count m) " cities: "]
         [:p "Solution found in " elapsed-time " msecs."]
         [:p "Generation: " (:generation result)]
-        [:p "Optimal cost: " (:cost result)]
+        [:p "Optimal distance: " (:distance result)]
         [:p "Optimal path: " (interpose " " (:path result))]
         [:p]
         [:p "Cost matrix: "]
