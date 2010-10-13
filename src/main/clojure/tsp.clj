@@ -39,25 +39,26 @@
   "Returns new offspring only if its distance is lower than first parent's distance.
   Otherwise it returns first parent (because it always has lower distance than second parent)."
   [parent1 parent2 mtx]
-  (let [idx (/ (count parent1) 2)
-        p1 (subvec parent1 0 idx)
+  (let [p1 (vec (half-of parent1))
         child (reduce insert-if-different p1 parent2)]
     (if (< (calculate-distance mtx child) (calculate-distance mtx parent1)) child parent1)))
     
 (defn next-generation 
   "Generates new generation using crossover."
   [population m]
-  (letfn [(iter [p]
-           (lazy-seq
-             (when (> (count p) 1)
-               (cons (crossover (first p) (second p) m) (iter (rest p))))))]
+  (letfn 
+    [(iter [p]
+      (lazy-seq
+        (when (> (count p) 1)
+          (cons (crossover (first p) (second p) m) (iter (rest p))))))]
     (cons (crossover (first population) (last population) m) (iter population))))
 			
 (defn next-mutated-gen 
   "Generates new generation using crossover and mutation."
   [population m]
-  (let [p (next-generation population m)]
-    (interleave (map mutate p) p)))
+  (let [best (first population)
+        p (next-generation (rest population) m)]
+    (concat (map mutate p) (cons best p))))
 
 (defn- solve 
   "Used by solve-tsp function to solve the TSP problem."
@@ -66,7 +67,7 @@
         current-best-path (first sorted-population)
         current-best-path-val (calculate-distance mtx current-best-path)
         best-path-val (calculate-distance mtx best-path)]
-    (if (or (= generation 1000) (= no-prosperity-for 20)) 
+    (if (or (== generation 500) (== no-prosperity-for 30)) 
       (if (< current-best-path-val best-path-val) 
         (struct result current-best-path-val generation current-best-path)
         (struct result best-path-val generation best-path))
@@ -76,8 +77,8 @@
 
 (defn solve-tsp 
   "Solves the TSP problem for given matrix.
-  The result is a map that contains keys :cost, :generation and :path."
+  The result is a map that contains keys :distance, :generation and :path."
   [mtx]
-  (let [initial-population (generate-initial-population 500 (count mtx))]
+  (let [initial-population (generate-initial-population 300 (count mtx))]
     (solve mtx initial-population 0 0 (create-single-chromosome (count mtx)))))
 
