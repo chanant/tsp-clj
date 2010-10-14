@@ -6,22 +6,22 @@
 (defn- generate-nil-row 
   "Generates a vector ref of given size with all its elements being nil."
   [size]
-  (ref (vec (repeat size nil))))
+  (transient (vec (repeat size nil))))
 
 (defn- generate-nil-matrix 
   "Generates square matrix of given dimension with all its elements being nil."
   [size]
   (vec (repeatedly size (partial generate-nil-row size))))
 	
-(defn- get-value-at 
-  "Returns a value in the given matrix with given coordinates."
+(defn get-value 
+  "Returns the value in the matrix at given position."
   [matrix i j]
-  (get (deref (get matrix i)) j))
+  ((matrix i) j))
 
 (defn- set-value-at 
   "Sets value at the given matrix at given coordinates."
   [matrix i j v]
-  (dosync (alter (get matrix i) assoc j v))) 
+  (assoc! (matrix i) j v)) 
 	
 (defn- generate-initial-matrix 
   "Generates random symmetric matrix of given dimension with 0s on its diagonal.
@@ -30,7 +30,7 @@
   (let [matrix (generate-nil-matrix size)]
     (dotimes [i size]
       (dotimes [j size]
-        (if (= nil (get-value-at matrix i j))
+        (if (= nil (get-value matrix i j))
           (if (= 0 (- i j))
             (set-value-at matrix i j 0)
             (let [v (rand-pos-int 1000)]
@@ -42,12 +42,7 @@
   Matrix is represented as a vector of vectors."
   [size]
   (let [m (generate-initial-matrix size)]
-    (vec (for [row m] @row))))
-		
-(defn get-value 
-  "Returns the value in the matrix at given position."
-  [matrix i j]
-  ((matrix i) j))
+    (vec (for [row m] (persistent! row)))))
 
 (defn print-matrix 
   "Prints a matrix that is represented as a vector of vectors."
@@ -56,11 +51,11 @@
     (println (apply str (interpose "	" (mtx i))))))
 
 (defn html-matrix 
-	"Returns matrix data as html table."
-	[mtx]
-	(html 
-		[:table {:border 1}
-			(for [row mtx] 
-				[:tr 
-					(for [cell row] [:td cell])])]))
+  "Returns matrix data as html table."
+  [mtx]
+  (html
+    [:table {:border 1}
+      (for [row mtx]
+        [:tr
+          (for [cell row] [:td cell])])]))
 	
