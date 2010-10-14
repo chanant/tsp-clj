@@ -25,7 +25,7 @@
 	
 (defn- generate-initial-matrix 
   "Generates random symmetric matrix of given dimension with 0s on its diagonal.
-  Rows in matrix are represented as vector refs."
+  Rows in matrix are represented as transients."
   [size]
   (let [matrix (generate-nil-matrix size)]
     (dotimes [i size]
