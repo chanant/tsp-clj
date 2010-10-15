@@ -28,12 +28,6 @@
   "Sorts paths in the population by minimal distance."
   [mtx population]
   (sort-by (partial calculate-distance mtx) population))
-  
-(defn mutate 
-  "Swaps two random elements in the chromosome."
-  [chromosome]
-  (let [chrom-size (count chromosome)]
-    (swap chromosome (rand-int chrom-size) (rand-int chrom-size))))
 
 (def use-f (ref true))
 (def use-s (ref true))
@@ -75,13 +69,28 @@
         (when (> (count p) 1)
           (cons (crossover (first p) (second p)) (iter (rest p))))))]
     (cons (crossover (first population) (last population)) (iter population))))
-			
+    
+(defn mutate 
+  "Mutates the chromosome (path) by swapping cities."
+  [mtx chrom]
+  (loop [ch chrom res chrom]
+    (let
+      [a (first ch)
+       b (second ch)
+       c (first (rest (rest ch)))
+       d (first (rest (rest (rest ch))))]
+       (if (every? #(not= nil %) [a b c d])
+         (if (> (+ (get-value mtx a b) (get-value mtx c d)) (+ (get-value mtx a c) (get-value mtx b d)))
+           (recur (rest ch) (swap res (index-of #{b} res) (index-of #{c} res)))
+           (recur (rest ch) res))
+         res))))
+    
 (defn next-mutated-gen 
   "Generates new generation using crossover and mutation."
-  [population]
+  [population mtx]
   (let [best (first population)
         p (next-generation (rest population))]
-    (concat (map mutate p) (cons best p))))
+    (concat (map (partial mutate mtx) p) (cons best p))))
 
 (defn- solve 
   "Used by solve-tsp function to solve the TSP problem."
@@ -94,7 +103,7 @@
       (if (< current-best-path-val best-path-val) 
         (struct result current-best-path-val generation current-best-path)
         (struct result best-path-val generation best-path))
-      (recur mtx (next-mutated-gen (half-of sorted-population)) (inc generation) 
+      (recur mtx (next-mutated-gen (half-of sorted-population) mtx) (inc generation) 
         (if (< current-best-path-val best-path-val) 0 (inc no-improvement-for)) 
         (if (< current-best-path-val best-path-val) current-best-path best-path)))))
 
@@ -102,6 +111,6 @@
   "Solves the TSP problem for given matrix.
   The result is a map that contains keys :distance, :generation and :path."
   [mtx]
-  (let [initial-population (generate-initial-population 500 (count mtx))]
+  (let [initial-population (generate-initial-population 300 (count mtx))]
     (solve mtx initial-population 0 0 (create-single-chromosome (count mtx)))))
 
